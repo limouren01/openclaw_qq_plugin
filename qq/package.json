@@ -1,0 +1,23 @@
+{
+  "name": "qq",
+  "version": "1.0.0",
+  "description": "QQ channel plugin for Clawdbot",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "clawdbot": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "clawdbot": "workspace:*"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.10"
+  }
+}
