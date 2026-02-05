@@ -6,6 +6,24 @@ QQ channel plugin powered by **Napcat** (OneBot 11 implementation).
 
 limouren
 
+## Installation
+
+**Note:** If you're unsure where to install the plugin, run `openclaw plugins list` to determine the correct plugin installation path based on your OpenClaw installation method. Installation paths may vary depending on whether you installed OpenClaw via npm, pnpm, or shell scripts. Please verify the actual location based on your installation.
+
+Example output from `openclaw plugins list`:
+
+```
+│ QQ           │ qq       │ loaded   │ ~/.local/share/pnpm/global/5/.pnpm/ │ 2026.2.2 │
+│              │          │          │ openclaw@2026.2.1_@napi-            │          │
+│              │          │          │ rs+canvas@0.1.89_@types+express@5.  │          │
+│              │          │          │ 0.6_node-llama-cpp@3.15.1_signal-   │          │
+│              │          │          │ polyfill@0.2.2/node_modules/        │          │
+│              │          │          │ openclaw/extensions/qq/src/index.ts │          │
+│              │          │          │ QQ channel plugin via Napcat        │          │
+```
+
+Based on the plugin path shown above (e.g., `openclaw/extensions/qq/`), place the `qq` folder under the `extensions` directory.
+
 ## Enable
 
 Bundled plugins are disabled by default. Enable this one:

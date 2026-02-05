@@ -36,7 +36,7 @@ export const qqPlugin: ChannelPlugin<ResolvedQQAccount> = {
         bindHost: {
           type: "string",
           description: "WebSocket server bind address (Napcat connects to this)",
-          default: "0.0.0.0",
+          default: "127.0.0.1",
         },
         bindPort: {
           type: "number",
