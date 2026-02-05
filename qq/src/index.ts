@@ -1,6 +1,6 @@
 // @ts-nocheck
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk";
-import { emptyPluginConfigSchema } from "clawdbot/plugin-sdk";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
 
 import { qqPlugin } from "./channel.js";
 import { setQQRuntime } from "./runtime.js";
@@ -10,7 +10,7 @@ const plugin = {
   name: "QQ",
   description: "QQ channel plugin via Napcat",
   configSchema: emptyPluginConfigSchema(),
-  register(api: ClawdbotPluginApi) {
+  register(api: OpenClawPluginApi) {
     setQQRuntime(api.runtime);
     api.registerChannel({ plugin: qqPlugin });
   },

@@ -1,0 +1,13 @@
+{
+  "id": "qq",
+  "channels": ["qq"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "host": { "type": "string", "description": "Napcat服务器地址" },
+      "port": { "type": "number", "description": "Napcat服务器端口" },
+      "token": { "type": "string", "description": "Napcat访问令牌" }
+    }
+  }
+}

@@ -1,28 +1,28 @@
 // @ts-nocheck
-import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "clawdbot/plugin-sdk";
+import type { OpenClawConfig } from "openclaw/plugin-sdk";
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "openclaw/plugin-sdk";
 import type { QQAccountConfig, ResolvedQQAccount } from "./types.js";
 
-function listConfiguredAccountIds(cfg: ClawdbotConfig): string[] {
+function listConfiguredAccountIds(cfg: OpenClawConfig): string[] {
   const accounts = cfg.channels?.qq?.accounts;
   if (!accounts || typeof accounts !== "object") return [];
   return Object.keys(accounts).filter(Boolean);
 }
 
-export function listQQAccountIds(cfg: ClawdbotConfig): string[] {
+export function listQQAccountIds(cfg: OpenClawConfig): string[] {
   const ids = listConfiguredAccountIds(cfg);
   if (ids.length === 0) return [DEFAULT_ACCOUNT_ID];
   return ids.sort((a, b) => a.localeCompare(b));
 }
 
-export function resolveDefaultQQAccountId(cfg: ClawdbotConfig): string {
+export function resolveDefaultQQAccountId(cfg: OpenClawConfig): string {
   const ids = listQQAccountIds(cfg);
   if (ids.includes(DEFAULT_ACCOUNT_ID)) return DEFAULT_ACCOUNT_ID;
   return ids[0] ?? DEFAULT_ACCOUNT_ID;
 }
 
 function resolveAccountConfig(
-  cfg: ClawdbotConfig,
+  cfg: OpenClawConfig,
   accountId: string,
 ): QQAccountConfig | undefined {
   const accounts = cfg.channels?.qq?.accounts;
@@ -30,7 +30,7 @@ function resolveAccountConfig(
   return accounts[accountId] as QQAccountConfig | undefined;
 }
 
-function mergeQQAccountConfig(cfg: ClawdbotConfig, accountId: string): QQAccountConfig {
+function mergeQQAccountConfig(cfg: OpenClawConfig, accountId: string): QQAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.qq ?? {}) as QQAccountConfig & {
     accounts?: unknown;
   };
@@ -39,7 +39,7 @@ function mergeQQAccountConfig(cfg: ClawdbotConfig, accountId: string): QQAccount
 }
 
 export function resolveQQAccount(params: {
-  cfg: ClawdbotConfig;
+  cfg: OpenClawConfig;
   accountId?: string | null;
 }): ResolvedQQAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -58,7 +58,7 @@ export function resolveQQAccount(params: {
   };
 }
 
-export function listEnabledQQAccounts(cfg: ClawdbotConfig): ResolvedQQAccount[] {
+export function listEnabledQQAccounts(cfg: OpenClawConfig): ResolvedQQAccount[] {
   return listQQAccountIds(cfg)
     .map((accountId) => resolveQQAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

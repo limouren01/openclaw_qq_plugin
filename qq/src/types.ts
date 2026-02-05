@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
+import type { OpenClawConfig } from "openclaw/plugin-sdk";
 
 export type QQAccountConfig = {
   host?: string;

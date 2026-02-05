@@ -1,13 +1,13 @@
 // @ts-nocheck
-import type { PluginRuntime } from "clawdbot/plugin-sdk";
+import type { OpenClawRuntime } from "openclaw/plugin-sdk";
 
-let runtime: PluginRuntime | null = null;
+let runtime: OpenClawRuntime | null = null;
 
-export function setQQRuntime(next: PluginRuntime) {
+export function setQQRuntime(next: OpenClawRuntime) {
   runtime = next;
 }
 
-export function getQQRuntime(): PluginRuntime {
+export function getQQRuntime(): OpenClawRuntime {
   if (!runtime) {
     throw new Error("QQ runtime not initialized");
   }

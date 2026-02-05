@@ -1,9 +1,9 @@
 import {
   logInboundDrop,
   resolveControlCommandGate,
-  type ClawdbotConfig,
-  type RuntimeEnv,
-} from "clawdbot/plugin-sdk";
+  type OpenClawConfig,
+  type PluginRuntime,
+} from "openclaw/plugin-sdk";
 
 import type { ResolvedQQAccount } from "./types.js";
 import {
@@ -35,8 +35,8 @@ async function deliverQQReply(params: {
 export async function handleQQInbound(params: {
   message: ParsedQQMessage;
   account: ResolvedQQAccount;
-  config: ClawdbotConfig;
-  runtime: RuntimeEnv;
+  config: OpenClawConfig;
+  runtime: PluginRuntime;
   botSelfId: string;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
 }): Promise<void> {

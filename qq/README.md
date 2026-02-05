@@ -1,4 +1,4 @@
-# QQ/Napcat (Clawdbot plugin)
+# QQ/Napcat (OpenClaw plugin)
 
 QQ channel plugin powered by **Napcat** (OneBot 11 implementation).
 
@@ -16,7 +16,7 @@ Restart the Gateway after enabling.
 
 ## Configuration
 
-Add your QQ channel configuration to `~/.clawdbot/clawdbot.json`:
+Add your QQ channel configuration to `~/.openclaw/openclaw.json`:
 
 ```json
 {
@@ -78,7 +78,7 @@ Example:
 
 ## Napcat Setup
 
-This plugin uses **reverse WebSocket** mode: Clawdbot starts a WebSocket server, and Napcat connects to it.
+This plugin uses **reverse WebSocket** mode: OpenClaw starts a WebSocket server, and Napcat connects to it.
 
 ### Configure Napcat
 
@@ -97,9 +97,9 @@ ws:
 ### Key Points
 
 
-- Replace `YOUR_NAPCAT_TOKEN` with the token from your Clawdbot config
-- Napcat will connect to Clawdbot automatically on startup
-- Messages from allowed QQ numbers are forwarded to Clawdbot for AI processing
+- Replace `YOUR_NAPCAT_TOKEN` with the token from your OpenClaw config
+- Napcat will connect to OpenClaw automatically on startup
+- Messages from allowed QQ numbers are forwarded to OpenClaw for AI processing
 
 ## Notes
 
@@ -115,13 +115,13 @@ ws:
 
 1. Check if Napcat is running and connected:
    ```bash
-   clawdbot channels status --probe
+   openclaw channels status --probe
    ```
 
 2. Verify Napcat `config.yml` has correct WebSocket URL and token
-3. Check Clawdbot logs for connection errors:
+3. Check OpenClaw logs for connection errors:
    ```bash
-   tail -f ~/.clawdbot/gateway.log | grep "QQ Gateway"
+   tail -f ~/.openclaw/gateway.log | grep "QQ Gateway"
    ```
 
 

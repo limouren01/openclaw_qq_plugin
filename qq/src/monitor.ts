@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import { EventEmitter } from "events";
 import { createServer, Server as HttpServer } from "http";
-import type { ClawdbotConfig, RuntimeEnv } from "clawdbot/plugin-sdk";
+import type { OpenClawConfig, PluginRuntime } from "openclaw/plugin-sdk";
 import {
   parseNapcatMessage,
   type NapcatMessageEvent,
@@ -28,8 +28,8 @@ export interface MonitorNapcatOpts {
     bindHost?: string;
     bindPort?: number;
   };
-  cfg?: ClawdbotConfig;
-  runtime?: RuntimeEnv;
+  cfg?: OpenClawConfig;
+  runtime?: PluginRuntime;
   abortSignal?: AbortSignal;
   onMessage?: (message: ParsedQQMessage) => void;
   setStatus: (status: any) => void;

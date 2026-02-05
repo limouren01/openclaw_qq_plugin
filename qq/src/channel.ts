@@ -5,7 +5,7 @@ import {
   getChatChannelMeta,
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
-} from "clawdbot/plugin-sdk";
+} from "openclaw/plugin-sdk";
 
 import { getQQRuntime } from "./runtime.js";
 import { resolveQQAccount } from "./config.js";
