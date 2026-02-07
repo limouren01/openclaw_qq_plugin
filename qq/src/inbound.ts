@@ -51,6 +51,8 @@ export async function handleQQInbound(params: {
   const senderName = message.senderName;
   const chatId = message.chatId;
 
+  console.log(`[QQ Gateway DEBUG] inbound.ts 初始化: chatId=${chatId}, senderId=${senderId}, message.chatType=${message.chatType}`);
+
   statusSink?.({ lastInboundAt: message.timestamp });
 
   const dmPolicy = account.config.dmPolicy ?? "open";
@@ -192,6 +194,7 @@ export async function handleQQInbound(params: {
     cfg: config,
     dispatcherOptions: {
       deliver: async (payload) => {
+        console.log(`[QQ Gateway DEBUG] deliverQQReply 调用: targetId=${chatId}, chatType=${isGroup ? "group" : "direct"}`);
         await deliverQQReply({
           payload: payload as {
             text?: string;

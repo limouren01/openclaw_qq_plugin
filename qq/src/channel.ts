@@ -10,7 +10,7 @@ import {
 import { getQQRuntime } from "./runtime.js";
 import { resolveQQAccount } from "./config.js";
 import type { ResolvedQQAccount } from "./types.js";
-import { sendQQMessage, probeNapcatConnection } from "./send.js";
+import { sendQQMessage, sendQQMediaMessage, probeNapcatConnection } from "./send.js";
 import { monitorNapcatProvider } from "./monitor.js";
 
 const meta = getChatChannelMeta("qq");
@@ -97,6 +97,9 @@ export const qqPlugin: ChannelPlugin<ResolvedQQAccount> = {
   messaging: {
     normalizeTarget: (input) => {
       const normalized = input.trim();
+      if (normalized.startsWith("qq:")) {
+        return normalized.replace(/^qq:/i, "");
+      }
       if (normalized.startsWith("user:")) {
         return normalized.replace(/^user:/i, "");
       }
@@ -106,8 +109,17 @@ export const qqPlugin: ChannelPlugin<ResolvedQQAccount> = {
       return normalized;
     },
     targetResolver: {
-      looksLikeId: (input) => /^\d+$/.test(input.trim()),
-      hint: "<userId|groupId|user:ID|group:ID>",
+      looksLikeId: (input) => /^(\d+|(qq|user|group):\d+)$/i.test(input.trim()),
+      hint: "<userId|groupId|user:ID|group:ID|qq:ID>",
+    },
+  },
+  threading: {
+    buildToolContext: ({ context }) => {
+      // For replies, use 'From' (the sender) not 'To' (which might be bot itself)
+      return {
+        currentChannelId: context.From?.trim() || undefined,
+        currentChannelProvider: context.Channel as any,
+      };
     },
   },
   outbound: {
@@ -129,14 +141,89 @@ export const qqPlugin: ChannelPlugin<ResolvedQQAccount> = {
     sendMedia: async ({ to, text, mediaUrl, accountId, replyToId }) => {
       const runtime = getQQRuntime();
       const account = resolveQQAccount({ cfg: runtime.config, accountId });
-      const message = text ? `${text}\n${mediaUrl}` : mediaUrl;
-      const result = await sendQQMessage(
-        account.accountId,
-        to,
-        message,
-        account.config,
-      );
-      return { channel: "qq", ...result };
+
+      // 动态导入 loadWebMedia
+      const { loadWebMedia } = await import("openclaw/plugin-sdk");
+
+      try {
+        // 加载媒体
+        const media = await loadWebMedia(mediaUrl);
+        const caption = text || "";
+
+        // 构建消息段数组
+        const segments = [];
+
+        // 添加配文
+        if (caption.trim()) {
+          segments.push({ type: "text", data: { text: caption } });
+        }
+
+        // 根据媒体类型创建消息段
+        let mediaSegment;
+        const base64Data = media.buffer.toString("base64");
+
+        switch (media.kind) {
+          case "image":
+            mediaSegment = {
+              type: "image",
+              data: { file: `base64://${base64Data}` }
+            };
+            break;
+          case "audio":
+            mediaSegment = {
+              type: "record",
+              data: { file: `base64://${base64Data}` }
+            };
+            break;
+          case "video":
+            mediaSegment = {
+              type: "video",
+              data: { file: `base64://${base64Data}` }
+            };
+            break;
+          case "document":
+            // 文档类型，使用图片类型发送文件
+            mediaSegment = {
+              type: "image",
+              data: {
+                file: `base64://${base64Data}`,
+                summary: media.fileName || "document"
+              }
+            };
+            break;
+          default:
+            // 未知类型，降级为 URL 文本
+            const fallbackMessage = caption ? `${caption}\n${mediaUrl}` : mediaUrl;
+            const result = await sendQQMessage(
+              account.accountId,
+              to,
+              fallbackMessage,
+              account.config,
+            );
+            return { channel: "qq", ...result };
+        }
+
+        segments.push(mediaSegment);
+
+        // 发送媒体消息
+        const result = await sendQQMediaMessage(
+          account.accountId,
+          to,
+          segments,
+          account.config,
+        );
+        return { channel: "qq", ...result };
+      } catch (error) {
+        // 加载媒体失败，降级为发送 URL 文本
+        const fallbackMessage = text ? `${text}\n${mediaUrl}` : mediaUrl;
+        const result = await sendQQMessage(
+          account.accountId,
+          to,
+          fallbackMessage,
+          account.config,
+        );
+        return { channel: "qq", ...result };
+      }
     },
   },
   status: {

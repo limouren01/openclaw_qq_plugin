@@ -2,19 +2,12 @@ import type { OpenClawConfig } from "openclaw/plugin-sdk";
 
 import type { ResolvedQQAccount } from "./types.js";
 
-export type QQGroupPolicy = "open" | "allowlist";
-export type QQDmPolicy = "open" | "allowlist";
-
-export function resolveQQGroupPolicy(account?: ResolvedQQAccount): QQGroupPolicy {
-  return account?.config.groupPolicy ?? "open";
-}
-
-export function resolveQQDmPolicy(account?: ResolvedQQAccount): QQDmPolicy {
+export function resolveQQDmPolicy(account?: ResolvedQQAccount): "open" | "allowlist" {
   return account?.config.dmPolicy ?? "open";
 }
 
 export function resolveQQGroupAllow(params: {
-  groupPolicy: QQGroupPolicy;
+  groupPolicy: "open" | "allowlist";
   allowFrom: string[];
   senderId: string;
   senderName: string;

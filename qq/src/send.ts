@@ -11,17 +11,17 @@ export const getSharedConnection = (accountId: string): WebSocket | undefined =>
   return sharedConnections.get(accountId)?.ws;
 };
 
-// 检查服务器是否已启动
-export const isServerRunning = (): boolean => {
-  const { sharedWsServer } = require("./monitor.js");
-  return sharedWsServer !== null;
-};
+// Napcat OneBot 11 消息段类型
+export interface NapcatMessageSegment {
+  type: string;
+  data: Record<string, any>;
+}
 
 export async function sendQQMessage(
   accountId: string,
   target: string,
   message: string,
-  config: {
+  _config?: {
     host?: string;
     port?: number;
     token?: string;
@@ -29,12 +29,31 @@ export async function sendQQMessage(
     bindPort?: number;
   },
 ): Promise<SendQQMessageResult> {
-  const token = config.token;
+  return sendQQMessageWithSegments(accountId, target, [
+    { type: "text", data: { text: message } },
+  ]);
+}
 
-  if (!token) {
-    throw new Error(`Napcat token is required for account ${accountId}`);
-  }
+export async function sendQQMediaMessage(
+  accountId: string,
+  target: string,
+  segments: NapcatMessageSegment[],
+  _config?: {
+    host?: string;
+    port?: number;
+    token?: string;
+    bindHost?: string;
+    bindPort?: number;
+  },
+): Promise<SendQQMessageResult> {
+  return sendQQMessageWithSegments(accountId, target, segments);
+}
 
+async function sendQQMessageWithSegments(
+  accountId: string,
+  target: string,
+  messageSegments: NapcatMessageSegment[],
+): Promise<SendQQMessageResult> {
   // 从 monitor.ts 获取共享连接
   const ws = getSharedConnection(accountId);
 
@@ -46,18 +65,14 @@ export async function sendQQMessage(
     const messageId = `qq-send-${Date.now()}`;
 
     // Napcat OneBot 11 API 格式
+    const userId = parseInt(target, 10);
+    console.log(`[QQ Gateway DEBUG] sendQQMessage: target=${target}, parsed userId=${userId}`);
+
     const payload = {
       action: "send_private_msg",
       params: {
-        user_id: parseInt(target, 10),
-        message: [
-          {
-            type: "text",
-            data: {
-              text: message,
-            },
-          },
-        ],
+        user_id: userId,
+        message: messageSegments,
       },
       echo: messageId,
     };
@@ -119,12 +134,6 @@ export async function probeNapcatConnection(
   },
   _timeoutMs: number = 5000,
 ): Promise<{ ok: boolean; message: string; bot?: any }> {
-  const token = config.token;
-
-  if (!token) {
-    return { ok: false, message: "Napcat token is required" };
-  }
-
   // 在反向连接模式下，probe 只是检查是否已有活跃连接
   const ws = getSharedConnection(accountId);
 
@@ -135,6 +144,6 @@ export async function probeNapcatConnection(
   // 如果没有活跃连接，返回提示用户需要启动 Napcat
   return {
     ok: false,
-    message: `No active connection for account ${accountId}. Please ensure Napcat is configured to connect to ws://${config.bindHost || "0.0.0.0"}:${config.bindPort || 8082} with token.`,
+    message: `No active connection for account ${accountId}. Please ensure Napcat is configured to connect to ws://${config.bindHost || "0.0.0.0"}:${config.bindPort || 8082}.`,
   };
 }

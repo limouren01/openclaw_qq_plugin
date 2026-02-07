@@ -98,6 +98,7 @@ export function parseNapcatMessage(message: NapcatMessageEvent): ParsedQQMessage
 
   // 时间戳
   const timestamp = message.time ? message.time * 1000 : Date.now();
+  //console.log(`[QQ Gateway DEBUG] parseNapcatMessage: senderId=${senderId}, chatId=${chatId}, chatType=${chatType}, messageType=${messageType}, post_type=${message.post_type}, user_id=${message.user_id}, self_id=${message.self_id}`);
 
   return {
     messageId,
@@ -149,68 +150,4 @@ function extractTextFromMessageSegments(segments: NapcatMessageSegment[]): strin
   return textParts.join("");
 }
 
-/**
- * 转换为核心期望的消息格式
- */
-export interface QQInboundContext {
-  Body: string;
-  RawBody: string;
-  CommandBody: string;
-  From: string;
-  To: string;
-  SessionKey: string;
-  AccountId: string;
-  ChatType: "direct" | "group";
-  ConversationLabel: string;
-  SenderName: string;
-  SenderId: string;
-  Provider: string;
-  Surface: string;
-  MessageSid: string;
-  Timestamp: number;
-  CommandAuthorized: boolean;
-  OriginatingChannel: string;
-  OriginatingTo: string;
-}
-
-export function buildQQInboundContext(
-  parsed: ParsedQQMessage,
-  accountId: string,
-  botSelfId: string
-): QQInboundContext {
-  // 构建From和To
-  const from = parsed.chatType === "group"
-    ? `group:${parsed.chatId}`
-    : `qq:${parsed.senderId}`;
-  const to = `qq:${botSelfId}`;
-
-  // 构建会话键
-  const sessionKey = `agent:default:qq:${parsed.chatType}:${parsed.chatId}`;
-
-  // 构建对话标签
-  const conversationLabel = parsed.chatType === "group"
-    ? (parsed.groupSubject || `QQ群 ${parsed.chatId}`)
-    : `${parsed.senderName} (${parsed.senderId})`;
-
-  return {
-    Body: parsed.body,
-    RawBody: parsed.rawBody,
-    CommandBody: parsed.rawBody,
-    From: from,
-    To: to,
-    SessionKey: sessionKey,
-    AccountId: accountId,
-    ChatType: parsed.chatType,
-    ConversationLabel: conversationLabel,
-    SenderName: parsed.senderName,
-    SenderId: parsed.senderId,
-    Provider: "qq",
-    Surface: "qq",
-    MessageSid: parsed.messageId,
-    Timestamp: parsed.timestamp,
-    CommandAuthorized: true,
-    OriginatingChannel: "qq",
-    OriginatingTo: to,
-  };
-}
 

@@ -9,18 +9,6 @@ function listConfiguredAccountIds(cfg: OpenClawConfig): string[] {
   return Object.keys(accounts).filter(Boolean);
 }
 
-export function listQQAccountIds(cfg: OpenClawConfig): string[] {
-  const ids = listConfiguredAccountIds(cfg);
-  if (ids.length === 0) return [DEFAULT_ACCOUNT_ID];
-  return ids.sort((a, b) => a.localeCompare(b));
-}
-
-export function resolveDefaultQQAccountId(cfg: OpenClawConfig): string {
-  const ids = listQQAccountIds(cfg);
-  if (ids.includes(DEFAULT_ACCOUNT_ID)) return DEFAULT_ACCOUNT_ID;
-  return ids[0] ?? DEFAULT_ACCOUNT_ID;
-}
-
 function resolveAccountConfig(
   cfg: OpenClawConfig,
   accountId: string,
@@ -56,10 +44,4 @@ export function resolveQQAccount(params: {
     token,
     config: merged,
   };
-}
-
-export function listEnabledQQAccounts(cfg: OpenClawConfig): ResolvedQQAccount[] {
-  return listQQAccountIds(cfg)
-    .map((accountId) => resolveQQAccount({ cfg, accountId }))
-    .filter((account) => account.enabled);
 }
