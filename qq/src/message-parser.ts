@@ -1,5 +1,7 @@
 // Napcat OneBot 消息解析器
 
+import type { QQMediaAttachment } from "./types.js";
+
 /**
  * Napcat OneBot 11 消息事件类型
  */
@@ -59,6 +61,9 @@ export interface ParsedQQMessage {
   chatId: string;
   groupSubject?: string;
 
+  // 媒体附件
+  mediaAttachments?: QQMediaAttachment[];
+
   // 是否为消息
   isValidMessage: boolean;
 }
@@ -100,6 +105,9 @@ export function parseNapcatMessage(message: NapcatMessageEvent): ParsedQQMessage
   const timestamp = message.time ? message.time * 1000 : Date.now();
   //console.log(`[QQ Gateway DEBUG] parseNapcatMessage: senderId=${senderId}, chatId=${chatId}, chatType=${chatType}, messageType=${messageType}, post_type=${message.post_type}, user_id=${message.user_id}, self_id=${message.self_id}`);
 
+  // 提取媒体附件
+  const mediaAttachments = extractMediaAttachments(message.message || []);
+
   return {
     messageId,
     timestamp,
@@ -111,6 +119,7 @@ export function parseNapcatMessage(message: NapcatMessageEvent): ParsedQQMessage
     chatType,
     chatId,
     groupSubject: isGroup ? `群 ${chatId}` : undefined,
+    mediaAttachments,
     isValidMessage: true,
   };
 }
@@ -149,5 +158,37 @@ function extractTextFromMessageSegments(segments: NapcatMessageSegment[]): strin
 
   return textParts.join("");
 }
+
+/**
+ * 从消息段数组中提取媒体附件
+ */
+function extractMediaAttachments(segments: NapcatMessageSegment[]): QQMediaAttachment[] {
+  const attachments: QQMediaAttachment[] = [];
+
+  for (const segment of segments) {
+    if (segment.type === "image" && segment.data?.url && segment.data?.file) {
+      attachments.push({
+        type: "image",
+        url: segment.data.url,
+        file: segment.data.file,
+      });
+    } else if (segment.type === "record" && segment.data?.url && segment.data?.file) {
+      attachments.push({
+        type: "record",
+        url: segment.data.url,
+        file: segment.data.file,
+      });
+    } else if (segment.type === "video" && segment.data?.url && segment.data?.file) {
+      attachments.push({
+        type: "video",
+        url: segment.data.url,
+        file: segment.data.file,
+      });
+    }
+  }
+
+  return attachments;
+}
+
 
 

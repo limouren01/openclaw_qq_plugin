@@ -13,6 +13,7 @@ export type QQAccountConfig = {
   groupAllowFrom?: string[];
   blockStreaming?: boolean;
   skills?: string[];
+  mediaMaxMb?: number;
 };
 
 export type ResolvedQQAccount = {
@@ -25,4 +26,15 @@ export type ResolvedQQAccount = {
   groupPolicy?: string;
   allowFrom?: string[];
   groupAllowFrom?: string[];
+};
+
+/**
+ * 媒体附件类型
+ */
+export type QQMediaAttachment = {
+  type: "image" | "record" | "video";
+  url: string;
+  file: string;
+  path?: string;
+  contentType?: string;
 };

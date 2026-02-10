@@ -13,6 +13,7 @@ import {
 } from "./policy.js";
 import { sendQQMessage } from "./send.js";
 import { getQQRuntime } from "./runtime.js";
+import { downloadQQMedia } from "./download.js";
 import type { ParsedQQMessage } from "./message-parser.js";
 
 const CHANNEL_ID = "qq" as const;
@@ -54,6 +55,28 @@ export async function handleQQInbound(params: {
   console.log(`[QQ Gateway DEBUG] inbound.ts 初始化: chatId=${chatId}, senderId=${senderId}, message.chatType=${message.chatType}`);
 
   statusSink?.({ lastInboundAt: message.timestamp });
+
+  // 解析媒体大小限制
+  const mediaMaxBytes = (account.config.mediaMaxMb ?? 20) * 1024 * 1024;
+
+  // 下载媒体文件
+  let downloadedMedia: typeof message.mediaAttachments = undefined;
+  if (message.mediaAttachments && message.mediaAttachments.length > 0) {
+    try {
+      const mediaPromises = message.mediaAttachments.map((attachment) =>
+        downloadQQMedia(attachment, mediaMaxBytes),
+      );
+      downloadedMedia = await Promise.all(mediaPromises);
+      console.log(
+        `[QQ Gateway] Downloaded ${downloadedMedia.length} media file(s)`,
+      );
+    } catch (error) {
+      console.error(
+        `[QQ Gateway] Failed to download media: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      // 下载失败时继续处理，但不包含媒体
+    }
+  }
 
   const dmPolicy = account.config.dmPolicy ?? "open";
   const defaultGroupPolicy = config.channels?.defaults?.groupPolicy;
@@ -157,6 +180,12 @@ export async function handleQQInbound(params: {
 
   const groupSystemPrompt = undefined; // QQ目前不支持群系统提示
 
+  // 构建媒体路径信息
+  const mediaPath = downloadedMedia?.[0]?.path;
+  const mediaType = downloadedMedia?.[0]?.contentType;
+  const mediaPaths = downloadedMedia?.map((m) => m.path).filter(Boolean);
+  const mediaTypes = downloadedMedia?.map((m) => m.contentType).filter(Boolean);
+
   const ctxPayload = core.channel.reply.finalizeInboundContext({
     Body: body,
     RawBody: rawBody,
@@ -178,6 +207,11 @@ export async function handleQQInbound(params: {
     OriginatingChannel: CHANNEL_ID,
     OriginatingTo: `qq:${botSelfId}`,
     CommandAuthorized: commandAuthorized,
+    MediaPath: mediaPath,
+    MediaType: mediaType,
+    MediaUrl: mediaPath,
+    MediaPaths: mediaPaths,
+    MediaTypes: mediaTypes,
   });
 
   await core.channel.session.recordInboundSession({
