@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/qq",
-  "version": "2026.2.7.3",
+  "version": "2026.2.10",
   "description": "OpenClaw QQ channel plugin via Napcat",
   "type": "module",
   "main": "src/index.ts",
