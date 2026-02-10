@@ -45,6 +45,78 @@ Add your QQ channel configuration to `~/.openclaw/openclaw.json`:
 | `bindHost` | WebSocket server bind address | No (default: 127.0.0.1) |
 | `bindPort` | WebSocket server bind port | No (default: 8082) |
 | `allowFrom` | List of allowed QQ numbers (whitelist) | No (default: allow all) |
+| `mediaMaxMb` | Maximum media file size to download (MB) | No (default: 20) |
+
+### Media Support
+
+QQ plugin supports receiving and processing images, voice messages, and videos.
+
+#### Image Recognition
+
+To enable AI image recognition for QQ messages, you need to configure a multi-modal model:
+
+```json
+{
+  "tools": {
+    "media": {
+      "image": {
+        "enabled": true,
+        "models": [
+          {
+            "provider": "siliconflow",
+            "model": "zai-org/GLM-4.6V"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**Important Requirements:**
+
+1. **Model must support vision**: The model you configure must be a multi-modal model that supports image input (e.g., GLM-4V, GLM-4.6V, gpt-4o, claude-3.5-sonnet)
+2. **Update model input declaration**: Ensure the model's `input` field includes `"image"`:
+
+```json
+{
+  "models": {
+    "providers": {
+      "siliconflow": {
+        "baseUrl": "https://api.siliconflow.cn/v1",
+        "apiKey": "your-api-key",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "zai-org/GLM-4.6V",
+            "name": "Silicon GLM 4.6V",
+            "reasoning": false,
+            "input": [
+              "text",
+              "image"
+            ],
+            "contextWindow": 128000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**How it works:**
+
+- When a user sends an image in QQ, the plugin downloads it to `~/.openclaw/media/inbound/`
+- The image is automatically processed through your configured vision model
+- The AI receives a description of the image along with any accompanying text
+- You can use other vision-capable providers (OpenAI, Anthropic, Google, MiniMax)
+
+**Default behavior:**
+
+- If `tools.media.image` is not configured, OpenClaw attempts to use a default vision model
+- Default limit: 20MB per media file (configurable via `mediaMaxMb`)
+- Images larger than the limit are skipped with a warning in logs
 
 ### Access Control
 
