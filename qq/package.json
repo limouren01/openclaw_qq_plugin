@@ -8,7 +8,20 @@
   "openclaw": {
     "extensions": [
       "./src/index.ts"
-    ]
+    ],
+    "channel": {
+      "id": "qq",
+      "label": "QQ",
+      "selectionLabel": "QQ (Napcat)",
+      "docsPath": "/channels/qq",
+      "docsLabel": "qq",
+      "blurb": "QQ channel via Napcat; requires running Napcat instance.",
+      "order": 50
+    },
+    "install": {
+      "localPath": "extensions/qq",
+      "defaultChoice": "local"
+    }
   },
   "dependencies": {
     "ws": "^8.18.0"

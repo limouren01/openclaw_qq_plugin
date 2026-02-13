@@ -67,14 +67,14 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
       const elapsed = Date.now() - connection.lastMessageTime;
       if (elapsed > 30000) {
-        logWarn(`[QQ Gateway] No message from ${connection.accountId} for ${elapsed}ms, sending ping...`);
+        // logWarn(`[QQ Gateway] No message from ${connection.accountId} for ${elapsed}ms, sending ping...`);
         if (connection.ws.readyState === WebSocket.OPEN) {
           connection.ws.ping();
         }
       }
 
       if (elapsed > 60000) {
-        logWarn(`[QQ Gateway] Connection stale for account ${connection.accountId}, closing...`);
+        // logWarn(`[QQ Gateway] Connection stale for account ${connection.accountId}, closing...`);
         connection.ws.close();
       }
     }, 10000);
@@ -98,7 +98,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
       const connectionAccountId = req.headers["x-self-id"]?.toString() || accountId;
 
-      logInfo(`[QQ Gateway] New connection from account ${connectionAccountId}`);
+      // logInfo(`[QQ Gateway] New connection from account ${connectionAccountId}`);
 
       const connection: NapcatConnection = {
         ws,
@@ -117,7 +117,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
         try {
           const messageStr = data.toString();
-          logInfo(`[QQ Gateway] Received message from ${connectionAccountId}: ${messageStr}`);
+          // logInfo(`[QQ Gateway] Received message from ${connectionAccountId}: ${messageStr}`);
           const message = JSON.parse(messageStr) as NapcatMessageEvent;
 
           // 解析Napcat消息
@@ -125,13 +125,13 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
           // 只转发有效的消息，忽略通知、API响应等
           if (parsedMessage && parsedMessage.isValidMessage) {
-            logInfo(`[QQ Gateway] Parsed message successfully: sender=${parsedMessage.senderId}, chatType=${parsedMessage.chatType}, body="${parsedMessage.body}"`);
+            //logInfo(`[QQ Gateway] Parsed message successfully: sender=${parsedMessage.senderId}, chatType=${parsedMessage.chatType}, body="${parsedMessage.body}"`);
             sharedEventEmitter.emit("napcat-message", connectionAccountId, message, parsedMessage);
           } else {
-            logInfo(`[QQ Gateway] Message not forwarded: post_type=${message.post_type}, message_type=${message.message_type}, parsed=${parsedMessage ? "yes" : "no"}`);
+            //logInfo(`[QQ Gateway] Message not forwarded: post_type=${message.post_type}, message_type=${message.message_type}, parsed=${parsedMessage ? "yes" : "no"}`);
             if (message.status && message.retcode && message.retcode !== 0) {
               // 忽略API错误响应
-              logWarn(`[QQ Gateway] Ignoring API error: ${message.message || "Unknown error"}`);
+              // logWarn(`[QQ Gateway] Ignoring API error: ${message.message || "Unknown error"}`);
             }
           }
         } catch (error) {
@@ -140,9 +140,9 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
       });
 
       ws.on("close", (code: number, reason: Buffer) => {
-        logWarn(
-          `[QQ Gateway] Connection closed for account ${connectionAccountId}: ${code} ${reason?.toString() || "unknown"}`,
-        );
+        // logWarn(
+        //   `[QQ Gateway] Connection closed for account ${connectionAccountId}: ${code} ${reason?.toString() || "unknown"}`,
+        // );
         connection.connected = false;
 
         if (connection.heartbeatInterval) {
@@ -154,7 +154,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
       });
 
       ws.on("error", (error: Error) => {
-        logError(`[QQ Gateway] Error for account ${connectionAccountId}: ${error}`);
+        // logError(`[QQ Gateway] Error for account ${connectionAccountId}: ${error}`);
       });
 
       ws.on("pong", () => {
@@ -162,13 +162,13 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
       });
     });
 
-    sharedWsServer.on("error", (error: Error) => {
-      logError(`[QQ Gateway] WebSocket server error: ${error}`);
-    });
+  sharedWsServer.on("error", (error: Error) => {
+    // logError(`[QQ Gateway] WebSocket server error: ${error}`);
+  });
 
-    await new Promise<void>((resolve) => {
+  await new Promise<void>((resolve) => {
       sharedHttpServer!.listen(bindPort, bindHost, () => {
-        logInfo(`[QQ Gateway] WebSocket server listening on ${bindHost}:${bindPort}`);
+        // logInfo(`[QQ Gateway] WebSocket server listening on ${bindHost}:${bindPort}`);
         resolve();
       });
     });
@@ -176,7 +176,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
   const messageHandler = async (msgAccountId: string, rawMessage: NapcatMessageEvent, parsedMessage: ParsedQQMessage) => {
     if (msgAccountId === accountId && parsedMessage) {
-      logInfo(`[QQ Gateway] Processing message for account ${accountId}`);
+      // logInfo(`[QQ Gateway] Processing message for account ${accountId}`);
 
       try {
         if (opts.cfg && opts.runtime) {
@@ -189,7 +189,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
             botSelfId: msgAccountId,
             statusSink: (patch) => {
               if (patch.lastInboundAt) {
-                logInfo(`[QQ Gateway] Last inbound at: ${new Date(patch.lastInboundAt).toISOString()}`);
+                // logInfo(`[QQ Gateway] Last inbound at: ${new Date(patch.lastInboundAt).toISOString()}`);
               }
             },
           });
@@ -197,7 +197,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
           // Fallback to simple onMessage if cfg/runtime not provided
           opts.onMessage(parsedMessage);
         } else {
-          logWarn(`[QQ Gateway] Cannot process message: cfg and runtime not provided`);
+          // logWarn(`[QQ Gateway] Cannot process message: cfg and runtime not provided`);
         }
       } catch (error) {
         logError(`[QQ Gateway] Error processing message: ${error}`);
@@ -209,12 +209,14 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
   const connectionHandler = (connectedAccountId: string) => {
     if (connectedAccountId === accountId) {
+      // logInfo(`[QQ Gateway] Account ${connectedAccountId} connected`);
       setStatus({ accountId: connectedAccountId, running: true, connected: true, lastStartAt: Date.now(), lastError: null });
     }
   };
 
   const disconnectionHandler = (disconnectedAccountId: string) => {
     if (disconnectedAccountId === accountId) {
+      // logWarn(`[QQ Gateway] Account ${disconnectedAccountId} disconnected`);
       setStatus({ accountId: disconnectedAccountId, running: false, connected: false, lastStopAt: Date.now() });
     }
   };
@@ -231,7 +233,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
 
   if (abortSignal) {
     abortSignal.addEventListener("abort", () => {
-      logInfo(`[QQ Gateway] Aborting for account ${accountId}`);
+      // logInfo(`[QQ Gateway] Aborting for account ${accountId}`);
       sharedEventEmitter.off("napcat-message", messageHandler);
       sharedEventEmitter.off("connected", connectionHandler);
       sharedEventEmitter.off("disconnected", disconnectionHandler);
@@ -239,7 +241,7 @@ export async function monitorNapcatProvider(opts: MonitorNapcatOpts) {
   }
 
   return async () => {
-    logInfo(`[QQ Gateway] Stopping for account ${accountId}`);
+    // logInfo(`[QQ Gateway] Stopping for account ${accountId}`);
     sharedEventEmitter.off("napcat-message", messageHandler);
     sharedEventEmitter.off("connected", connectionHandler);
     sharedEventEmitter.off("disconnected", disconnectionHandler);

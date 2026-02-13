@@ -2,9 +2,9 @@
 import {
   DEFAULT_ACCOUNT_ID,
   deleteAccountFromConfigSection,
-  getChatChannelMeta,
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
+  type ChannelOnboardingAdapter,
 } from "openclaw/plugin-sdk";
 
 import { getQQRuntime } from "./runtime.js";
@@ -12,13 +12,19 @@ import { resolveQQAccount } from "./config.js";
 import type { ResolvedQQAccount } from "./types.js";
 import { sendQQMessage, sendQQMediaMessage, probeNapcatConnection } from "./send.js";
 import { monitorNapcatProvider } from "./monitor.js";
-
-const meta = getChatChannelMeta("qq");
+import { qqOnboardingAdapter } from "./onboarding.js";
 
 export const qqPlugin: ChannelPlugin<ResolvedQQAccount> = {
   id: "qq",
   meta: {
-    ...meta,
+    id: "qq",
+    label: "QQ",
+    selectionLabel: "QQ (Napcat)",
+    detailLabel: "QQ Bot",
+    docsPath: "/extensions/qq",
+    docsLabel: "qq",
+    blurb: "QQ channel plugin powered by Napcat (OneBot 11 implementation).",
+    order: 100,
   },
   capabilities: {
     chatTypes: ["direct", "group"],
@@ -113,6 +119,7 @@ export const qqPlugin: ChannelPlugin<ResolvedQQAccount> = {
       hint: "<userId|groupId|user:ID|group:ID|qq:ID>",
     },
   },
+  onboarding: qqOnboardingAdapter as ChannelOnboardingAdapter,
   threading: {
     buildToolContext: ({ context }) => {
       // For replies, use 'From' (the sender) not 'To' (which might be bot itself)

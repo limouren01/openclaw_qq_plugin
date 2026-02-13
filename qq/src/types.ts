@@ -8,7 +8,7 @@ export type QQAccountConfig = {
   bindHost?: string;
   bindPort?: number;
   dmPolicy?: "open" | "allowlist" | "disabled";
-  groupPolicy?: "open" | "allowlist";
+  groupPolicy?: "open" | "allowlist" | "disabled";
   allowFrom?: string[];
   groupAllowFrom?: string[];
   blockStreaming?: boolean;

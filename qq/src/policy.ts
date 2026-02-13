@@ -7,7 +7,7 @@ export function resolveQQDmPolicy(account?: ResolvedQQAccount): "open" | "allowl
 }
 
 export function resolveQQGroupAllow(params: {
-  groupPolicy: "open" | "allowlist";
+  groupPolicy: "open" | "allowlist" | "disabled";
   allowFrom: string[];
   senderId: string;
   senderName: string;
@@ -18,13 +18,21 @@ export function resolveQQGroupAllow(params: {
     return { allowed: true };
   }
 
-  if (allowFrom.length === 0) {
-    return { allowed: true };
+  if (groupPolicy === "disabled") {
+    return { allowed: false, reason: "group messages are disabled" };
   }
 
-  const allowed = allowFrom.includes(senderId);
-  return {
-    allowed,
-    reason: allowed ? undefined : `sender ${senderName} (${senderId}) not in allowlist`,
-  };
+  if (groupPolicy === "allowlist") {
+    if (allowFrom.length === 0) {
+      return { allowed: false, reason: "allowlist is empty, all group messages are blocked" };
+    }
+
+    const allowed = allowFrom.includes(senderId);
+    return {
+      allowed,
+      reason: allowed ? undefined : `sender ${senderName} (${senderId}) not in allowlist`,
+    };
+  }
+
+  return { allowed: false, reason: `unknown group policy: ${groupPolicy}` };
 }

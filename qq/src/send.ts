@@ -66,7 +66,7 @@ async function sendQQMessageWithSegments(
 
     // Napcat OneBot 11 API 格式
     const userId = parseInt(target, 10);
-    console.log(`[QQ Gateway DEBUG] sendQQMessage: target=${target}, parsed userId=${userId}`);
+    // console.log(`[QQ Gateway DEBUG] sendQQMessage: target=${target}, parsed userId=${userId}`);
 
     const payload = {
       action: "send_private_msg",

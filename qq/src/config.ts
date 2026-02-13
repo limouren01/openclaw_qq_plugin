@@ -45,3 +45,16 @@ export function resolveQQAccount(params: {
     config: merged,
   };
 }
+
+export function listQQAccountIds(cfg: OpenClawConfig): string[] {
+  const accounts = cfg.channels?.qq?.accounts;
+  if (!accounts || typeof accounts !== "object") return [DEFAULT_ACCOUNT_ID];
+  const ids = Object.keys(accounts).filter(Boolean);
+  return ids.length > 0 ? ids.sort((a, b) => a.localeCompare(b)) : [DEFAULT_ACCOUNT_ID];
+}
+
+export function resolveDefaultQQAccountId(cfg: OpenClawConfig): string {
+  const ids = listQQAccountIds(cfg);
+  if (ids.includes(DEFAULT_ACCOUNT_ID)) return DEFAULT_ACCOUNT_ID;
+  return ids[0] ?? DEFAULT_ACCOUNT_ID;
+}
